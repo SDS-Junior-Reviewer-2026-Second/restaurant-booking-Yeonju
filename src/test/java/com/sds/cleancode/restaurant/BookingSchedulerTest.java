@@ -25,7 +25,7 @@ public class BookingSchedulerTest {
     TestableMailSender testableMailSender = new TestableMailSender();
 
     public BookingSchedulerTest() {
-        bookingScheduler = new BookingScheduler(CAPACITY_PER_HOUR);
+        bookingScheduler = new TestableBookingScheduler(CAPACITY_PER_HOUR, "2021/03/26 09:00");
     }
 
     @BeforeEach
@@ -132,9 +132,32 @@ public class BookingSchedulerTest {
 
     @Test
     public void 현재날짜가_일요일인_경우_예약불가_예외처리() {
+        //arrange
+        bookingScheduler = new TestableBookingScheduler(CAPACITY_PER_HOUR, "2021/03/28 17:00");
+
+        //act
+        try {
+            Schedule newSchedule = new Schedule(ON_THE_HOUR, UNDER_CAPACITY, CUSTOMER);
+            bookingScheduler.addSchedule(newSchedule);
+            fail();
+        }
+        catch (RuntimeException e) {
+            //assert
+            assertThat(e.getMessage()).isEqualTo("Booking system is not available on sunday");
+        }
     }
 
     @Test
     public void 현재날짜가_일요일이_아닌경우_예약가능() {
+        //arrange
+        bookingScheduler = new TestableBookingScheduler(CAPACITY_PER_HOUR, "2024/06/03 17:00");
+
+        //act
+        Schedule newSchedule = new Schedule(ON_THE_HOUR, UNDER_CAPACITY, CUSTOMER);
+        bookingScheduler.addSchedule(newSchedule);
+
+        //assert
+        assertThat(bookingScheduler.hasSchedule(newSchedule)).isEqualTo(true);
+
     }
 }
